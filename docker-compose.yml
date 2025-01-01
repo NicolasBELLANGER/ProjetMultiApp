@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  flask-api:
+    build:
+      context: ./flask-api
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=sqlite:///app.db
+
+  websocket:
+    build:
+      context: ./websocket
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - flask-api
+      - websocket
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

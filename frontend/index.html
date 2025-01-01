@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Application Web</title>
+</head>
+<body>
+	<h1>Liste des Articles</h1>
+	<ul id="articles"></ul>
+
+	<script>
+		function updateArticles() {
+			fetch('/api/articles')
+				.then(response => response.json())
+				.then(data => {
+					const articlesList = document.getElementById('articles');
+					articlesList.innerHTML = '';
+					data.forEach(article => {
+						let li = document.createElement('li');
+						li.textContent = article.title;
+						articlesList.appendChild(li);
+					});
+			});
+		}
+
+		const ws = new WebSocket('ws://localhost:8081/ws/');
+
+		ws.onmessage = function(event) {
+			console.log('Message WebSocket reçu:', event.data);
+			if (event.data === 'Nouveau message reçu'){
+				updateArticles();
+			}
+		};
+
+		ws.onopen = function() {
+			console.log('Connexion WebSocket établie');
+			ws.send('Message depuis le navigateur');
+		};
+
+		ws.onerror = function(event) {
+			console.error('Erreur WebSocket:', event);
+		};
+
+		ws.onclose = function(event) {
+			console.log('Connexion WebSocket fermée:', event);
+		};
+
+		updateArticles();
+	</script>
+</body>
+</html>
